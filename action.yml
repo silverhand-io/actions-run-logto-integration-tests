@@ -1,6 +1,6 @@
 # https://docs.github.com/en/actions/creating-actions/creating-a-composite-run-steps-action
-
 name: Run Logto integration tests
+description: This action is used to run Logto integration tests
 inputs:
   branch:
     description: "Tests source branch"
@@ -9,20 +9,12 @@ inputs:
   logto_artifact:
     description: "Logto service artifact"
     required: true
-  db_url:
-    description: "Database URL"
-    required: true
-    default: postgres://postgres:postgres@localhost:5432/postgres
   test_target:
     description: "Select the target integration tests to run"
     required: true
 
 runs:
   using: composite
-  env:
-    INTEGRATION_TEST: true
-    DB_URL: ${{ inputs.db_url }}
-
   steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -97,21 +89,20 @@ runs:
       shell: bash
       run: sleep 5
 
-  # Run integration tests
-  - name: Run tests
-    shell: bash
-    run: |
-      cd tests/packages/integration-tests
-      pnpm build
-      pnpm run test:${{ inputs.test_target }}
-  
-  - name: Show logs
-    if: always()
-    working-directory: logto/
-    run: cat nohup.out
+    # Run integration tests
+    - name: Run tests
+      shell: bash
+      run: |
+        cd tests/packages/integration-tests
+        pnpm build
+        pnpm run test:${{ inputs.test_target }}
 
-  - name: Show error logs
-    if: always()
-    working-directory: logto/
-    run: cat nohup.err
+    - name: Show logs
+      if: always()
+      working-directory: logto/
+      run: cat nohup.out
 
+    - name: Show error logs
+      if: always()
+      working-directory: logto/
+      run: cat nohup.err
