@@ -1,0 +1,117 @@
+# https://docs.github.com/en/actions/creating-actions/creating-a-composite-run-steps-action
+
+name: Run Logto integration tests
+inputs:
+  branch:
+    description: "Tests source branch"
+    required: true
+    default: ${{ github.head_ref }}
+  logto_artifact:
+    description: "Logto service artifact"
+    required: true
+  db_url:
+    description: "Database URL"
+    required: true
+    default: postgres://postgres:postgres@localhost:5432/postgres
+  test_target:
+    description: "Select the target integration tests to run"
+    required: true
+
+runs:
+  using: composite
+  env:
+    INTEGRATION_TEST: true
+    DB_URL: ${{ inputs.db_url }}
+
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.branch }}
+        path: tests
+
+    - name: Copy lockfile
+      shell: bash
+      run: |
+        cp tests/pnpm-lock.yaml ./
+        cp tests/package.json ./
+
+    - name: Setup Node and pnpm
+      uses: silverhand-io/actions-node-pnpm-run-steps@v3
+      with:
+        run-install: false
+
+    # Set up integration test
+    - name: Install dependencies and prepack
+      shell: bash
+      run: |
+        cd tests
+        pnpm i
+        pnpm prepack
+        # Install Chromium
+        cd packages/integration-tests/node_modules/puppeteer
+        pnpm postinstall
+
+    # Set up environment
+    - name: Set up Postgres
+      uses: ikalnytskyi/action-setup-postgres@v4
+
+    - name: Setup Redis
+      uses: supercharge/redis-github-action@6dc7a5eeaf9a8f860b6464e05195a15f8b9f3bbb # 1.7.0
+      with:
+        redis-version: 6
+
+    # Setup Logto
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.logto_artifact }}
+
+    - name: Extract Logto code
+      working-directory: tests
+      shell: bash
+      run: |
+        npm run cli init -- \
+          -p ../logto \
+          --du ../logto.tar.gz
+
+    - name: Check and add mock connectors
+      working-directory: tests
+      shell: bash
+      run: |
+        npm run cli connector list -- -p ../logto | grep OFFICIAL
+        npm run cli connector link -- --mock -p ../logto
+
+    - name: Setup mock Cloudflare Hostname Provider config
+      working-directory: tests
+      shell: bash
+      run: npm run cli db system set cloudflareHostnameProvider '{"zoneId":"mock-zone-id","apiToken":""}'
+
+    - name: Run Logto
+      working-directory: logto/
+      shell: bash
+      run: nohup npm start > nohup.out 2> nohup.err < /dev/null &
+      env:
+        REDIS_URL: 1
+
+    - name: Wait for Logto to start
+      shell: bash
+      run: sleep 5
+
+  # Run integration tests
+  - name: Run tests
+    shell: bash
+    run: |
+      cd tests/packages/integration-tests
+      pnpm build
+      pnpm run test:${{ inputs.test_target }}
+  
+  - name: Show logs
+    if: always()
+    working-directory: logto/
+    run: cat nohup.out
+
+  - name: Show error logs
+    if: always()
+    working-directory: logto/
+    run: cat nohup.err
+
