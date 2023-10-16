@@ -86,7 +86,7 @@ runs:
 
     - name: DB Alteration
       if: ${{ inputs.db_alteration_target != '' }}
-      uses: silverhand-io/actions-run-db-alteration-steps@v1.0.0
+      uses: logto-io/actions-run-db-alteration-steps@v1.0.0
       with:
         branch: ${{ inputs.db_alteration_target }}
 
