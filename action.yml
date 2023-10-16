@@ -1,4 +1,7 @@
 # https://docs.github.com/en/actions/creating-actions/creating-a-composite-run-steps-action
+# Prerequisites:
+# - environment variables: DB_URL, INTEGRATION_TEST
+
 name: Run Logto integration tests
 description: This action is used to run Logto integration tests
 inputs:
@@ -12,6 +15,9 @@ inputs:
   test_target:
     description: "Select the target integration tests to run"
     required: true
+  db_alteration_target:
+    description: "Alterations source branch"
+    required: false
 
 runs:
   using: composite
@@ -77,6 +83,12 @@ runs:
       working-directory: tests
       shell: bash
       run: npm run cli db system set cloudflareHostnameProvider '{"zoneId":"mock-zone-id","apiToken":""}'
+
+    - name: DB Alteration
+      if: ${{ inputs.db_alteration_target != '' }}
+      uses: silverhand-io/actions-run-db-alteration-steps@v1.0.0_beta.1
+      with:
+        branch: ${{ inputs.db_alteration_target }}
 
     - name: Run Logto
       working-directory: logto/
