@@ -100,9 +100,11 @@ runs:
     - name: Show logs
       if: always()
       working-directory: logto/
+      shell: bash
       run: cat nohup.out
 
     - name: Show error logs
       if: always()
       working-directory: logto/
+      shell: bash
       run: cat nohup.err
