@@ -7,8 +7,6 @@ description: This action is used to run Logto integration tests
 inputs:
   branch:
     description: "Tests source branch"
-    required: true
-    default: ${{ github.head_ref }}
   logto_artifact:
     description: "Logto service artifact"
     required: true
