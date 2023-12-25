@@ -33,7 +33,7 @@ runs:
         cp tests/package.json ./
 
     - name: Setup Node and pnpm
-      uses: silverhand-io/actions-node-pnpm-run-steps@v3
+      uses: silverhand-io/actions-node-pnpm-run-steps@v4
       with:
         run-install: false
 
