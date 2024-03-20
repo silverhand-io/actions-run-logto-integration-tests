@@ -16,6 +16,9 @@ inputs:
   db_alteration_target:
     description: "Alterations source branch"
     required: false
+  verbose:
+    description: "Show all kinds of logs"
+    type: boolean
 
 runs:
   using: composite
@@ -108,7 +111,7 @@ runs:
         pnpm run test:${{ inputs.test_target }}
 
     - name: Show logs
-      if: always()
+      if: ${{ always() && inputs.verbose }}
       working-directory: logto/
       shell: bash
       run: cat nohup.out
