@@ -71,7 +71,7 @@ runs:
     # Setup Logto
     - uses: actions/download-artifact@v4
       with:
-        name: ${{ inputs.logto_artifact }}
+        name: ${{ inputs['logto-artifact'] }}
 
     - name: Extract Logto code
       working-directory: tests
@@ -94,10 +94,10 @@ runs:
       run: npm run cli db system set cloudflareHostnameProvider '{"zoneId":"mock-zone-id","apiToken":""}'
 
     - name: DB Alteration
-      if: ${{ inputs.db_alteration_target != '' }}
+      if: ${{ inputs['db-alteration-target'] != '' }}
       uses: logto-io/actions-run-db-alteration-steps@v1.0.0
       with:
-        branch: ${{ inputs.db_alteration_target }}
+        branch: ${{ inputs['db-alteration-target'] }}
 
     - name: Run Logto
       working-directory: logto/
@@ -116,7 +116,7 @@ runs:
       run: |
         cd tests/packages/integration-tests
         pnpm build
-        pnpm run test:${{ inputs.test_target }}
+        pnpm run test:${{ inputs['test-target'] }}
 
     - name: Show logs
       if: ${{ always() && inputs.verbose }}
