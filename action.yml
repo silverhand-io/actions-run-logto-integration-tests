@@ -7,18 +7,24 @@ description: This action is used to run Logto integration tests
 inputs:
   branch:
     description: "Tests source branch"
-  logto_artifact:
+  logto-artifact:
     description: "Logto service artifact"
     required: true
-  test_target:
+  test-target:
     description: "Select the target integration tests to run"
     required: true
-  db_alteration_target:
+  db-alteration-target:
     description: "Alterations source branch"
     required: false
   verbose:
     description: "Show all kinds of logs"
     type: boolean
+  node-version:
+    type: string
+    default: ^20.9
+  pnpm-version:
+    type: string
+    default: 8
 
 runs:
   using: composite
@@ -39,6 +45,8 @@ runs:
       uses: silverhand-io/actions-node-pnpm-run-steps@v4
       with:
         run-install: false
+        node-version: ${{ inputs['node-version'] }}
+        pnpm-version: ${{ inputs['pnpm-version'] }}
 
     # Set up integration test
     - name: Install dependencies and prepack
