@@ -21,8 +21,10 @@ inputs:
     type: boolean
   node-version:
     type: string
+    default: ^20.9
   pnpm-version:
     type: string
+    default: 8
 
 runs:
   using: composite
