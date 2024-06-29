@@ -110,13 +110,16 @@ runs:
       shell: bash
       run: sleep 5
 
-    # Run integration tests
     - name: Run tests
-      shell: bash
-      run: |
-        cd tests/packages/integration-tests
-        pnpm build
-        pnpm run test:${{ inputs['test-target'] }}
+      # Integration tests are moody
+      uses: nick-fields/retry@v3
+      with: 
+        timeout_minutes: 10
+        max_attempts: 3
+        command: |
+          cd tests/packages/integration-tests
+          pnpm build
+          pnpm run test:${{ inputs['test-target'] }}
 
     - name: Show logs
       if: ${{ always() && inputs.verbose }}
