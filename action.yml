@@ -42,7 +42,7 @@ runs:
         cp tests/package.json ./
 
     - name: Setup Node and pnpm
-      uses: silverhand-io/actions-node-pnpm-run-steps@v4
+      uses: silverhand-io/actions-node-pnpm-run-steps@v5
       with:
         run-install: false
         node-version: ${{ inputs['node-version'] }}
