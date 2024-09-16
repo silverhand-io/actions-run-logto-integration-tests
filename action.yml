@@ -73,13 +73,20 @@ runs:
       with:
         name: ${{ inputs['logto-artifact'] }}
 
-    - name: Extract Logto code
+    - name: Extract Logto code and seed database
       working-directory: tests
       shell: bash
       run: |
         npm run cli init -- \
           -p ../logto \
           --du ../logto.tar.gz
+
+    # FIXME: Last version of CLI doesn't support test data seeding. Here's a temporary workaround.
+    # We will remove this step when a new version of CLI is released.
+    - name: Seed legacy data
+      working-directory: logto
+      shell: bash
+      run: pnpm cli db seed --legacy-test-data
 
     - name: Check and add mock connectors
       working-directory: tests
